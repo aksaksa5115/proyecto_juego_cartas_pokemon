@@ -7,7 +7,7 @@ use Slim\Factory\AppFactory;
 require __DIR__ . '/../../vendor/autoload.php'; //COLOCAR PUNTOS PARA DIRIGIRME AL DIRECTORIO VENDOR.
 
 $app = AppFactory::create(); //Crea la app (El Core)
-$app->addBodyParsingMiddleware();
+$app->setBasePath('/PokemonCards_Web-main/src/public'); //setea la ruta que tiene que usar el slim para llegar a este index (el pelotudo se pierde)
 
 $app->get('/', function (Request $request, Response $response, $args) { //El string del argumento es el LOCALHOST de la APP.
     $response->getBody()->write("Hello world!");
