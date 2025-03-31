@@ -1,8 +1,11 @@
 <?php
+// Cargar la configuración desde el archivo
+$config = require __DIR__ . '/database_config.php';
 
-$dsn = "mysql:host=localhost;dbname=pokemonbd;charset=utf8"; #DSN = DATA SOURCE NAME host, dbname, charset; Son los parametros
-$username = "root"; #su nombre de usuario, por defecto en XAMPP es root
-$password = ""; #la contraseña, por defecto en XAMPP es '' (osea vacia)
+// Construir el DSN con las variables del array
+$dsn = "mysql:host={$config['host']};dbname={$config['dbname']};charset=utf8"; #DSN = DATA SOURCE NAME host, dbname, charset; Son los parametros
+$username = $config['username']; #su nombre de usuario, por defecto en XAMPP es root
+$password = $config['password']; #la contraseña, por defecto en XAMPP es '' (osea vacia)
 
 try { #creamos una instancia de PDO (una conexion a una base de datos, le pasamos los parametros) y con [] configuramos
     $pdo = new PDO($dsn, $username, $password, [ 
