@@ -1,6 +1,6 @@
 <?php
  #include_once __DIR__ . '/../public/index.php'; //Incluye el archivo index.php para ejecutar la app de Slim.
- include_once __DIR__ . '/database.php'; //Incluye el archivo de conexión a la base de datos.
+ include_once __DIR__ . '/../config/database.php'; //Incluye el archivo de conexión a la base de datos.
 ?>
 
 <!DOCTYPE html>
