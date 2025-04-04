@@ -20,3 +20,5 @@ try { #creamos una instancia de PDO (una conexion a una base de datos, le pasamo
 catch (PDOException $e){
     die("error en la conexion: ". $e->getMessage());
 }
+
+return $pdo; #retorna la conexion a la base de datos, para usarla en otros archivos
