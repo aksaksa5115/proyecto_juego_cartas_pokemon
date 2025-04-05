@@ -1,0 +1,31 @@
+Este proyecto para ser ejecutado tendra que hacerse de manera local, instalando XAMPP
+luego abriendo la carpeta de XAMPP
+dirigirse a 
+Apache/config/extra/http-vhosts
+abrir ese archivo
+y vera esto repetido 2 veces
+debera cambiar el de abajo de todo
+
+##<VirtualHost *:80>
+    ##ServerAdmin webmaster@dummy-host.example.com
+    ##DocumentRoot "C:/ruta-ejemplo/XAMPP/htdocs/dummy-host.example.com"
+    ##ServerName dummy-host.example.com
+    ##ServerAlias www.dummy-host.example.com
+    ##ErrorLog "logs/dummy-host.example.com-error.log"
+    ##CustomLog "logs/dummy-host.example.com-access.log" common
+##</VirtualHost>
+
+debera cambiar dejarlo asi
+
+<VirtualHost *:80>
+    ##ServerAdmin webmaster@dummy-host.example.com
+    DocumentRoot "tu disco:/tu ruta/XAMPP/htdocs/la ruta al archivo index.php"
+    ServerName slim.pokemon // aca podes poner el nombre que quieras, asegurate de que tenga slim. al principio nada mas
+    ##ServerAlias www.dummy-host.example.com
+    ##ErrorLog "logs/dummy-host.example.com-error.log"
+    ##CustomLog "logs/dummy-host.example.com-access.log" common
+</VirtualHost>
+guarde los cambios y cierre el archivo
+luego abrir XAMPP-control y activar apache y MySQL
+ir a su navegador y escribir lo que haya puesto en "ServerName" / el metodo que quiera
+

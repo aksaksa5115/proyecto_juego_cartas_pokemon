@@ -35,7 +35,9 @@ return function (App $app, PDO $pdo) {
             $stmt->execute([$jwt, date('Y-m-d H:i:s', $expira), $data['usuario']]);
 
             // Devolver el token y la fecha de expiración
-            $response->getBody()->write(json_encode(["token" => $jwt, "expira" => $expira]));
+            $response->getBody()->write
+            (json_encode
+            (["token" => $jwt, "expira" => date('Y-m-d H:i:s', $expira), "usuario" => $data['usuario']]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
         } catch (PDOException $e) {
             $response->getBody()->write(json_encode(["error" => "Error en la base de datos"]));

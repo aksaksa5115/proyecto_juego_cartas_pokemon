@@ -13,8 +13,6 @@ try { #creamos una instancia de PDO (una conexion a una base de datos, le pasamo
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC, #los resultados de una consulta se devuelven en un array asociativo
         PDO::ATTR_EMULATE_PREPARES => false #asegura que las consultas provengan de MySQL, evita inyecciones SQL (hackeos) 
 ]);
-    #si todo sale bien se conecta
-    echo "conexion exitosa";
 }
     #si todo sale mal, explota
 catch (PDOException $e){
