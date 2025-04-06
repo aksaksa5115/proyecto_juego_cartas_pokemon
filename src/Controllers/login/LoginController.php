@@ -23,7 +23,7 @@ return function (App $app, PDO $pdo) {
             $stmt->execute([$data['usuario']]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            if (!$user || $data['password'] !== $user['password']) {
+            if (!$user || !password_verify($data['password'], $user['password'])) {
                 $response->getBody()->write(json_encode(["error" => "Usuario o contraseña incorrectos"]));
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(401);
             }
@@ -32,7 +32,12 @@ return function (App $app, PDO $pdo) {
             date_default_timezone_set('America/Argentina/Buenos_Aires'); // defino zona horaria 
             $expira = time() + 3600; // 1 hora de expiración
             $key = "secret_password_no_copy"; // Cambia esto por una clave secreta más segura
-            $payload = ['usuario_id' => $user['id'], 'exp' => time() + 3600];
+            $payload = [
+                'sub' => $user['id'],                // el id del usuario
+                'username' => $user['usuario'],      // el nombre de usuario
+                'exp' => $expira                     // fecha de expiración
+            ];
+            
             $jwt = JWT::encode($payload, $key, 'HS256');
 
             // Guardar el token y la fecha de expiración en la base de datos

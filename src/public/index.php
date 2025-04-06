@@ -30,8 +30,13 @@ $app->get('/', function (Request $request, Response $response, $args) { //El str
     return $response;
 });
 
+// importo el middleware de JWT
+require_once __DIR__ . '/../Middleware/JWTmiddleware.php';
+
+$JWT = new JWTmiddleware("secret_password_no_copy"); 
+
 // 👉 Cargar las rutas desde el archivo routes/routes.php
-(require __DIR__ . '/../routes/routes.php')($app, $pdo);
+(require __DIR__ . '/../routes/routes.php')($app, $pdo, $JWT); //Le paso la app y la base de datos a las rutas.
 
 
 $app->run(); //Corre la APP.

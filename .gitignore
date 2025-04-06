@@ -1,2 +1,4 @@
 /vendor/
-/src/templates/database_config.php
+/src/config/database_config.php
+/claves_usuarios.txt
+

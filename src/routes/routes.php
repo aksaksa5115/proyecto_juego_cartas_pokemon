@@ -6,7 +6,7 @@ use Slim\App;
 
 
 #Esta es una funcion de prueba, retorna todos los usuarios de la base de datos.
-return function (App $app, PDO $pdo) {
+return function (App $app, PDO $pdo, $JWT) {
     $app->get('/users', function (Request $request, Response $response) use ($pdo) {
         $stmt = $pdo->query("SELECT * FROM usuario"); 
         $usuarios = $stmt->fetchAll();
@@ -24,4 +24,6 @@ return function (App $app, PDO $pdo) {
     (require __DIR__ . '/../Controllers/login/RegisterController.php')($app, $pdo); //POST /registro
     //Ruta para actualizar contraseñas de usuarios
     (require __DIR__ . '/../Controllers/login/UpdatePassword.php')($app, $pdo); //PUT /actContras
+    //ruta para solicitar datos del usuario logueado con middleware JWT
+    (require __DIR__ . '/../Controllers/JWTController.php')($app, $pdo, $JWT); //GET /perfil
 };
