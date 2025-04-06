@@ -15,7 +15,13 @@ return function (App $app, PDO $pdo) {
         return $response;
     });
 
-    // Podés seguir agregando más rutas: POST, PUT, DELETE...
+    //---------A PARTIR DE ACA SE AGREGAN LAS RUTAS DE LOS CONTROLADORES------------------
+    //A su derecha ira el nombre del controlador que se va a encargar de la logica de la ruta.
+
     //Ruta del login para autenticar usuarios
-    (require __DIR__ . '/../login/LoginController.php')($app, $pdo);
+    (require __DIR__ . '/../Controllers/login/LoginController.php')($app, $pdo); //POST /login
+    //Ruta para registrar usuarios
+    (require __DIR__ . '/../Controllers/login/RegisterController.php')($app, $pdo); //POST /registro
+    //Ruta para actualizar contraseñas de usuarios
+    (require __DIR__ . '/../Controllers/login/UpdatePassword.php')($app, $pdo); //PUT /actContras
 };

@@ -13,6 +13,11 @@ return function (App $app, PDO $pdo) {
             return $response->withHeader('Content-Type', 'application/json')->withStatus(400); //bad request
         }
 
+        if ($data['usuario'] === 'server') {
+            $response->getBody()->write(json_encode(["error" => "Acceso denegado al usuario del sistema."]));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
+        }
+
         try {
             $stmt = $pdo->prepare("SELECT * FROM usuario WHERE usuario = ?");
             $stmt->execute([$data['usuario']]);
