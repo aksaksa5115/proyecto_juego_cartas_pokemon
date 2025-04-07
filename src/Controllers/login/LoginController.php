@@ -5,6 +5,10 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 
 return function (App $app, PDO $pdo) {
+    # en POSTMAN poner en formato JSON el body de la peticion
+    #{ "usuario": "introducir su usuario",
+    # "password":"introducir su contraseña"
+    #}
     $app->post('/login', function(Request $request, Response $response) use ($pdo) {
         $data = json_decode($request->getBody(), true);
         #chequeo si data es un array y si tiene los indices usuario y password

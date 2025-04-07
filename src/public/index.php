@@ -36,7 +36,7 @@ require_once __DIR__ . '/../Middleware/JWTmiddleware.php';
 $JWT = new JWTmiddleware("secret_password_no_copy"); 
 
 // 👉 Cargar las rutas desde el archivo routes/routes.php
-(require __DIR__ . '/../routes/routes.php')($app, $pdo, $JWT); //Le paso la app y la base de datos a las rutas.
+(require __DIR__ . '/../routes/routes.php')($app, $pdo, $JWT); //Le paso la app, la base de datos y el Middleware a las rutas.
 
 
 $app->run(); //Corre la APP.

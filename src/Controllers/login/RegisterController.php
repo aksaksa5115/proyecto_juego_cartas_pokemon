@@ -5,6 +5,11 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 
 return function (App $app, PDO $pdo) {
+    # en POSTMAN en formato JSON poner en el body los siguientes datos:
+    # { "nombre": "introducir nombre", 
+    #   "usuario": "nuevoUsuario", 
+    #   "password": "nuevaPassword"
+    # }
     $app->post('/registro', function(Request $request, Response $response) use ($pdo) {
         $data = json_decode($request->getBody(), true);
 
@@ -18,12 +23,12 @@ return function (App $app, PDO $pdo) {
         $password = trim($data['password']);
 
         if (!preg_match('/^[a-zA-Z]{3,20}$/', $nombre)) {
-            $response->getBody()->write(json_encode(["error" => "El nombre debe tener entre 6 y 20 caracteres y solo puede contener letras."]));
+            $response->getBody()->write(json_encode(["error" => "El nombre debe tener entre 3 y 20 caracteres y solo puede contener letras."]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(400); //bad request
         }
 
         if (!preg_match('/^[a-zA-Z0-9]{1,20}$/', $usuario)) {
-            $response->getBody()->write(json_encode(["error" => "El nombre de usuario debe tener entre 6 y 20 caracteres y solo puede contener letras."]));
+            $response->getBody()->write(json_encode(["error" => "El nombre de usuario debe tener entre 1 y 20 caracteres y solo puede contener letras."]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(400); //bad request
         }
 
