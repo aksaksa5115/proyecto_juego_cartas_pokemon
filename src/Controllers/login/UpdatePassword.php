@@ -3,6 +3,7 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 
+// ESTO SOLO SE USA SI SE INGRESAN USUARIOS DE FORMA MANUAL EN LA BASE DE DATOS
 return function (App $app, PDO $pdo) {
 $app->put('/actContras', function (Request $request, Response $response) use ($pdo) {
     try {

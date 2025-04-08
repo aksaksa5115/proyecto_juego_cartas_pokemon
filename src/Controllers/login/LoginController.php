@@ -1,8 +1,8 @@
 <?php
-use Firebase\JWT\JWT;
-use Psr\Http\Message\ResponseInterface as Response;
-use Psr\Http\Message\ServerRequestInterface as Request;
-use Slim\App;
+use Firebase\JWT\JWT; // Importar la librería JWT de Firebase
+use Psr\Http\Message\ResponseInterface as Response; // Importar la interfaz de respuesta de PSR
+use Psr\Http\Message\ServerRequestInterface as Request; // Importar la interfaz de solicitud de PSR
+use Slim\App; // Importar la clase Slim\App
 
 return function (App $app, PDO $pdo) {
     # en POSTMAN poner en formato JSON el body de la peticion
@@ -16,12 +16,12 @@ return function (App $app, PDO $pdo) {
             $response->getBody()->write(json_encode(["error" => "faltan datos"]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(400); //bad request
         }
-
+        // chequeo si el usuario intenta entrar a server
         if ($data['usuario'] === 'server') {
             $response->getBody()->write(json_encode(["error" => "Acceso denegado al usuario del sistema."]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
         }
-
+        //chequeo si se ingreso un usuario valido, y si ingreso bien la contraseña
         try {
             $stmt = $pdo->prepare("SELECT * FROM usuario WHERE usuario = ?");
             $stmt->execute([$data['usuario']]);
@@ -36,12 +36,13 @@ return function (App $app, PDO $pdo) {
             date_default_timezone_set('America/Argentina/Buenos_Aires'); // defino zona horaria 
             $expira = time() + 3600; // 1 hora de expiración
             $key = "secret_password_no_copy"; // Cambia esto por una clave secreta más segura
+            // el payload es un array asociativo que contiene la información que se va a codificar en el token
             $payload = [
                 'sub' => $user['id'],                // el id del usuario
                 'username' => $user['usuario'],      // el nombre de usuario
                 'exp' => $expira                     // fecha de expiración
             ];
-            
+            // Codificar el token JWT
             $jwt = JWT::encode($payload, $key, 'HS256');
 
             // Guardar el token y la fecha de expiración en la base de datos

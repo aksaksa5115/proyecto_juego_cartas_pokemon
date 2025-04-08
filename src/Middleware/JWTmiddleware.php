@@ -1,5 +1,6 @@
 <?php
 
+use Firebase\JWT\ExpiredException;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Slim\Psr7\Response;
@@ -27,20 +28,23 @@ class JWTmiddleware {
 
         // Extrae solo el token, quitando la palabra "Bearer "
         $token = str_replace('Bearer ', '', $authHeader);
-
         try {
-            // Decodifica el token usando la clave secreta y el algoritmo HS256
+            // Decodificar el token JWT usando la clave secreta
+            // y el algoritmo HS256, chequeando la fecha de expiración y si el token es válido
             $decoded = JWT::decode($token, new Key($this->secret, 'HS256'));
-            // Agrega el token decodificado como atributo de la request (para usarlo en el controlador)
             $request = $request->withAttribute('jwt', $decoded);
-            // Si todo está bien, deja que la request continúe al controlador
             return $handler->handle($request);
-
-        } catch (\Exception $e) {
-            // Si el token es inválido o expiró, devuelve un error 401
+            // si el token expiro, lanza una excepción ExpiredException
+        } catch (ExpiredException $e) {
             $response = new Response();
-            $response->getBody()->write(json_encode(['error' => 'Token inválido o expirado']));
+            $response->getBody()->write(json_encode(['error' => 'El token ha expirado.']));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(401);
+            // si el token es invalido, lanza una excepción de tipo Exception
+        } catch (\Exception $e) {
+            $response = new Response();
+            $response->getBody()->write(json_encode(['error' => 'Token inválido.']));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(401);
         }
+        
     }
 }
