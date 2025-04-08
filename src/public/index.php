@@ -13,7 +13,7 @@ $app->addRoutingMiddleware();
 $app->addBodyParsingMiddleware();
 $app->addErrorMiddleware(true, true, true);
 
-// Middleware to handle CORS and headers
+// Middleware to handle CORS and headers (todo esto viene de la catedra, nose que hace)
 $app->add(function ($request, $handler) {
     $response = $handler->handle($request);
 
@@ -24,7 +24,7 @@ $app->add(function ($request, $handler) {
         ->withHeader('Content-Type', 'application/json');
 });
 
-
+// primera instancia de la app, para ver si funciona el localhost.
 $app->get('/', function (Request $request, Response $response, $args) { //El string del argumento es el LOCALHOST de la APP.
     $response->getBody()->write("API SLIM funcionando");
     return $response;
@@ -33,6 +33,7 @@ $app->get('/', function (Request $request, Response $response, $args) { //El str
 // importo el middleware de JWT
 require_once __DIR__ . '/../Middleware/JWTmiddleware.php';
 
+// 👉 Instancio el middleware de JWT con la clave secreta
 $JWT = new JWTmiddleware("secret_password_no_copy"); 
 
 // 👉 Cargar las rutas desde el archivo routes/routes.php
