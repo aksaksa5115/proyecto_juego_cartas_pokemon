@@ -1,4 +1,6 @@
 <?php
+// ESTE ARCHIVO ESTA SOLO PARA SERVIR DE BACKUP
+// PORQUE EL METODO PUT TIENDE A ROMPERSE
 use Firebase\JWT\JWT;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
