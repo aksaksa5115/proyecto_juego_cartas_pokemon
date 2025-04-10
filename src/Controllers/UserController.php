@@ -4,12 +4,16 @@ use Psr\Http\Message\ResponseInterface as Response; // Importar la interfaz de r
 use Psr\Http\Message\ServerRequestInterface as Request; // Importar la interfaz de solicitud de PSR
 use Slim\App; // Importar la clase Slim\App
 
+
+require_once __DIR__ ."/../validation.php"; // Importar la clase de validación 
+
     #----------------------METODOS DE USUARIO----------------------
     #--------------------------------------------------------------
 return function ($app, $pdo, $JWT ) {
     # en POSTMAN poner en formato JSON el body de la peticion
-    #{ "usuario": "introducir su usuario",
-    # "password":"introducir su contraseña"
+    #{ 
+    #  "usuario": "introducir su usuario",
+    #  "password":"introducir su contraseña"
     #}
     $app->post('/login', function(Request $request, Response $response) use ($pdo) {
         $data = json_decode($request->getBody(), true);
@@ -82,19 +86,19 @@ return function ($app, $pdo, $JWT ) {
         $password = trim($data['password']);
         
         // chequeo si el nombre es correcto
-        if (!preg_match('/^[a-zA-Z]{3,20}$/', $nombre)) {
+        if (!validation::validarNombre($nombre)) {
             $response->getBody()->write(json_encode(["error" => "El nombre debe tener entre 3 y 20 caracteres y solo puede contener letras."]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(400); //bad request
         }
 
         // chequeo si el usuario es correcto
-        if (!preg_match('/^[a-zA-Z0-9]{1,20}$/', $usuario)) {
+        if (!validation::validarUsername($usuario)) {
             $response->getBody()->write(json_encode(["error" => "El nombre de usuario debe tener entre 1 y 20 caracteres y solo puede contener letras."]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(400); //bad request
         }
 
         // chequeo si la contraseña es correcta
-        if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/', $password)) {
+        if (!validation::validarPassword($password)) {
             $response->getBody()->write(json_encode(['error' => 'La clave debe tener al menos 8 caracteres, incluyendo mayúsculas, minúsculas, números y caracteres especiales.']));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
         }
@@ -155,7 +159,7 @@ return function ($app, $pdo, $JWT ) {
         // si el usuario quiere cambiar su nombre entra aca
         if (trim($nuevoUsername) !== "") {
             // Validar el nuevo nombre de usuario
-            if (!preg_match('/^[a-zA-Z0-9]{1,20}$/', $nuevoUsername)) {
+            if (!validation::validarUsername($nuevoUsername)) {
                 $response->getBody()->write(json_encode(["error" => "El nombre de usuario debe tener entre 1 y 20 caracteres y solo puede contener letras."]));
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(400); //bad request
             }
@@ -175,7 +179,7 @@ return function ($app, $pdo, $JWT ) {
         // si el usuario quiere cambiar su contraseña entra aca
         if (trim($nuevaPassword) !== "") {
             // Validar la nueva contraseña
-            if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/', $nuevaPassword)) {
+            if (!validation::validarPassword($nuevaPassword)) {
                 $response->getBody()->write(json_encode(['error' => 'La clave debe tener al menos 8 caracteres,
                  incluyendo mayúsculas, minúsculas, números y caracteres especiales.']));
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
