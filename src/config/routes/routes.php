@@ -22,6 +22,8 @@ return function (App $app, PDO $pdo, $JWT) {
     # PUT /perfil <------- actualizar datos del usuario logueado
     # GET /perfil <------- obtener datos del usuario logueado
     (require __DIR__ . '/../Controllers/UserController/UserController.php')($app, $pdo, $JWT);
+    # Esta ruta solo extrae las estadisticas de los jugadores, cantidad de ganadas, perdidas y empatadas
+    (require __DIR__ . '/../Controllers/UserController/StatsGlobal.php')($app, $pdo);
     //---------------------------------------------------------------------------------------
     //--------- Ruta para los controladores de mazos -----------
     (require __DIR__ . '/../Controllers/DeckController/deckController.php')($app, $pdo, $JWT);

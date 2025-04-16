@@ -1,13 +1,13 @@
 <?php
 use Psr\Http\Message\ResponseInterface as Response; // Importar la interfaz de respuesta de PSR
 use Psr\Http\Message\ServerRequestInterface as Request; // Importar la interfaz de solicitud de PSR
-use Slim\App;
+
 
     # EN ESTOS METODOS ES NECESARIO HACER LO SIGUIENTE:
     # en POSTMAN en Headers en la parte de Key poner:
     # Authorization y en Value poner Bearer seguido del token que se genera al loguearse.
 
-return function (App $app, PDO $pdo, $JWT) {
+return function ($app, PDO $pdo, $JWT) {
 
     # en POSTMAN escribir esto en formato JSON de la siguiente manera:
     # {

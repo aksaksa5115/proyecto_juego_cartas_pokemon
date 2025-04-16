@@ -2,7 +2,6 @@
 use Firebase\JWT\JWT; // Importar la librería JWT de Firebase
 use Psr\Http\Message\ResponseInterface as Response; // Importar la interfaz de respuesta de PSR
 use Psr\Http\Message\ServerRequestInterface as Request; // Importar la interfaz de solicitud de PSR
-use Slim\App; // Importar la clase Slim\App
 
 
 require_once __DIR__ ."/../../validation.php"; // Importar la clase de validación 
