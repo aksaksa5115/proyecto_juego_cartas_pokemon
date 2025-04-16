@@ -165,4 +165,33 @@ return function (App $app, PDO $pdo, $JWT) {
         return $response->withHeader('Content-Type', 'application/json')->withStatus(200); // OK
     })->add($JWT);
 
+
+    $app->get('/cartas', function(Request $request, Response $response) use ($pdo) {
+        $param = $request->getQueryParams();
+        # extraigo los datos de la url
+        $atributo = $param['atributo'] ?? null;
+        $nombre = $param['nombre'] ?? null;
+
+        # preparo la consulta de forma dinamica, por eso el WHERE 1=1, sirve de base para los demas filtros
+        $sql = "SELECT c.nombre, c.ataque, c.ataque_nombre, a.nombre as atributo FROM carta c
+                INNER JOIN atributo a ON c.atributo_id = a.id WHERE 1=1";
+        # preparo el array de parametros para la consulta
+        $params = [];
+
+        if ($atributo){
+            $sql .= " AND a.nombre = ?";
+            $params[] = $atributo;
+        }
+        if ($nombre){
+            $sql .= " AND c.nombre LIKE ?";
+            $params[] = "%$nombre%"; // busco por nombre, no por id
+        }
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        $cartas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $response->getBody()->write(json_encode(['cartas' => $cartas]));
+        return $response->withHeader('Content-type', 'application/json')->withStatus(200);
+    });
 };
