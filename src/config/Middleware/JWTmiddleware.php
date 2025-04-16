@@ -42,7 +42,8 @@ class JWTmiddleware {
             // si el token es invalido, lanza una excepción de tipo Exception
         } catch (\Exception $e) {
             $response = new Response();
-            $response->getBody()->write(json_encode(['error' => 'Token inválido.']));
+            $response->getBody()->write(json_encode(['error' => 'Token invalido.',
+        'detalle' => $e->getMessage()]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(401);
         }
         

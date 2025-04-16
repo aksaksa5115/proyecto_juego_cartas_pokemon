@@ -14,7 +14,6 @@ return function (App $app, PDO $pdo, $JWT) {
         $response->getBody()->write(json_encode($usuarios));
         return $response;
     });
-
     //---------<A PARTIR DE ACA SE AGREGAN LAS RUTAS DE LOS CONTROLADORES>------------------
     //--------- Ruta para los controladores de usuarios -----------
     #este controlador posee las siguientes opciones:
@@ -22,7 +21,9 @@ return function (App $app, PDO $pdo, $JWT) {
     # POST /registro <------ registrarse en la pag
     # PUT /perfil <------- actualizar datos del usuario logueado
     # GET /perfil <------- obtener datos del usuario logueado
-    (require __DIR__ . '/../Controllers/UserController.php')($app, $pdo, $JWT);
+    (require __DIR__ . '/../Controllers/UserController/UserController.php')($app, $pdo, $JWT);
     //---------------------------------------------------------------------------------------
+    //--------- Ruta para los controladores de mazos -----------
+    (require __DIR__ . '/../Controllers/DeckController/deckController.php')($app, $pdo, $JWT);
     
 };

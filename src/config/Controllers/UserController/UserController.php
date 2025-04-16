@@ -5,7 +5,7 @@ use Psr\Http\Message\ServerRequestInterface as Request; // Importar la interfaz 
 use Slim\App; // Importar la clase Slim\App
 
 
-require_once __DIR__ ."/../validation.php"; // Importar la clase de validación 
+require_once __DIR__ ."/../../validation.php"; // Importar la clase de validación 
 
     #----------------------METODOS DE USUARIO----------------------
     #--------------------------------------------------------------
