@@ -23,6 +23,7 @@ return function (App $app, PDO $pdo, $JWT) {
     # GET /perfil <------- obtener datos del usuario logueado
     (require __DIR__ . '/../Controllers/UserController/UserController.php')($app, $pdo, $JWT);
     # Esta ruta solo extrae las estadisticas de los jugadores, cantidad de ganadas, perdidas y empatadas
+    # GET /stats <------- obtener estadisticas de los jugadores
     (require __DIR__ . '/../Controllers/UserController/StatsGlobal.php')($app, $pdo);
     //---------------------------------------------------------------------------------------
     //--------- Ruta para los controladores de mazos -----------
@@ -39,5 +40,9 @@ return function (App $app, PDO $pdo, $JWT) {
     # DELETE /partida/{partida} <------- eliminar una partida
 
     (require __DIR__ . '/../Controllers/MatchController/matchController.php')($app, $pdo, $JWT);
+    //---------------------------------------------------------------------------------------
+    //--------- Ruta para los controladores de movimientos -----------
+    #este controlador posee las siguientes opciones:
+    (require __DIR__ . '/../Controllers/Movements/movementsController.php')($app, $pdo, $JWT);
     
 };
