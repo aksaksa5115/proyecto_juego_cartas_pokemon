@@ -23,11 +23,6 @@ return function ($app, PDO $pdo, $JWT) {
         $nombre = trim($body['nombre'] ?? '');
         $cartas = $body['cartas'] ?? [];
 
-        //depuracion
-
-        #$userId = is_object($user) ? $user->sub : ($user['sub'] ?? null);
-
-
         if (!$userId) {
             $response->getBody()->write(json_encode(["error" => "Token inválido o sin ID."]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(401);
@@ -90,7 +85,7 @@ return function ($app, PDO $pdo, $JWT) {
 
     # en POSTMAN escribir esto en la URL de la siguiente manera:
     # "ruta al proyecto"/mazo/"id del mazo a eliminar"
-    # 
+
     $app->delete('/mazo/{mazo}', function(Request $request, Response $response, Array $args) use ($pdo){
         $user = $request->getAttribute('jwt');
         $mazoId = $args['mazo']; // id del mazo a eliminar, lo extraigo desde la url
@@ -164,6 +159,13 @@ return function ($app, PDO $pdo, $JWT) {
         $response->getBody()->write(json_encode(['message'=> "mazo '$mazoId' actualizado con éxito al nombre '$nombre'."]));
         return $response->withHeader('Content-Type', 'application/json')->withStatus(200); // OK
     })->add($JWT);
+
+
+    # para agregar los filtros a la consulta de cartas, se hace de la siguiente manera:
+    # en POSTMAN escribir esto en la URL de la siguiente manera:
+    # "ruta al proyecto"/cartas?atributo="nombre del atributo"&nombre="nombre de la carta"
+    # el atributo y el nombre son opcionales, si no se pasan, se devuelven todas las cartas
+    # pueden poner un solo filtro si quieren, el & es solo para agregar otro filtro
 
 
     $app->get('/cartas', function(Request $request, Response $response) use ($pdo) {

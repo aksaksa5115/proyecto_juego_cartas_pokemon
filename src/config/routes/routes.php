@@ -33,8 +33,10 @@ return function (App $app, PDO $pdo, $JWT) {
     # PUT /mazo/{mazo} <------- modificar un mazo
     (require __DIR__ . '/../Controllers/DeckController/deckController.php')($app, $pdo, $JWT);
     //---------------------------------------------------------------------------------------
-    //--------- Ruta para los controladores de cartas -----------
+    //--------- Ruta para los controladores de partidas -----------
     #este controlador posee las siguientes opciones:
+    # POST /partida <------- crear una partida nueva
+    # DELETE /partida/{partida} <------- eliminar una partida
 
     (require __DIR__ . '/../Controllers/MatchController/matchController.php')($app, $pdo, $JWT);
     

@@ -2,8 +2,16 @@
 use Psr\Http\Message\ResponseInterface as Response; // Importar la interfaz de respuesta de PSR
 use Psr\Http\Message\ServerRequestInterface as Request; // Importar la interfaz de solicitud de PSR
 
+    # EN ESTOS METODOS ES NECESARIO HACER LO SIGUIENTE:
+    # en POSTMAN en Headers en la parte de Key poner:
+    # Authorization y en Value poner Bearer seguido del token que se genera al loguearse.
+
 return function ($app, PDO $pdo, $JWT) {
 
+    # en POSTMAN escribir esto en formato JSON de la siguiente manera:
+    # {
+    #  "mazo": 1, // id del mazo a usar
+    # }
     $app->post('/partida', function (Request $request, Response $response) use ($pdo) {
         $body = $request->getParsedBody();
         $user = $request->getAttribute('jwt');
@@ -52,6 +60,9 @@ return function ($app, PDO $pdo, $JWT) {
          'cartas' => $cartas]));
         return $response->withHeader('Content-Type', 'application/json')->withStatus(201); // Created
     }) ->add($JWT); // Agregar el middleware JWT a la ruta de partidas
+
+    # en POSTMAN escribir esto en la URL de la siguiente manera:
+    # "ruta al proyecto"/partida/"id de la partida a eliminar"
 
     // este endpoint sirve para debuggear en caso de hacer una partida de forma incorrecta
     $app->delete('/partida/{duelo}', function (Request $request, Response $response, Array $args) use ($pdo) {
