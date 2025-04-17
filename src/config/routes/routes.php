@@ -26,6 +26,16 @@ return function (App $app, PDO $pdo, $JWT) {
     (require __DIR__ . '/../Controllers/UserController/StatsGlobal.php')($app, $pdo);
     //---------------------------------------------------------------------------------------
     //--------- Ruta para los controladores de mazos -----------
+    #este controlador posee las siguientes opciones:
+    # POST /mazo <------- crear un mazo nuevo
+    # GET /mazos <------- obtener todos los mazos del usuario logueado
+    # DELETE /mazo/{mazo} <------- eliminar un mazo
+    # PUT /mazo/{mazo} <------- modificar un mazo
     (require __DIR__ . '/../Controllers/DeckController/deckController.php')($app, $pdo, $JWT);
+    //---------------------------------------------------------------------------------------
+    //--------- Ruta para los controladores de cartas -----------
+    #este controlador posee las siguientes opciones:
+
+    (require __DIR__ . '/../Controllers/MatchController/matchController.php')($app, $pdo, $JWT);
     
 };
