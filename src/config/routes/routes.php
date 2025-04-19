@@ -5,7 +5,7 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 
 
-#Esta es una funcion de prueba, retorna todos los usuarios de la base de datos.
+# Esta es una funcion de prueba, retorna todos los usuarios de la base de datos.
 return function (App $app, PDO $pdo, $JWT) {
     $app->get('/users', function (Request $request, Response $response) use ($pdo) {
         $stmt = $pdo->query("SELECT * FROM usuario"); 
@@ -38,7 +38,6 @@ return function (App $app, PDO $pdo, $JWT) {
     #este controlador posee las siguientes opciones:
     # POST /partida <------- crear una partida nueva
     # DELETE /partida/{partida} <------- eliminar una partida
-
     (require __DIR__ . '/../Controllers/MatchController/matchController.php')($app, $pdo, $JWT);
     //---------------------------------------------------------------------------------------
     //--------- Ruta para los controladores de movimientos -----------
