@@ -5,7 +5,6 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
 
 require __DIR__ . '/../../vendor/autoload.php'; //COLOCAR PUNTOS PARA DIRIGIRME AL DIRECTORIO VENDOR.
-$pdo = require __DIR__ . '/../config/database.php'; //COLOCAR PUNTOS PARA DIRIGIRME AL DIRECTORIO DE LA BASE DE DATOS.
 $app = AppFactory::create(); //Crea la app (El Core)
 
 // Add routing and body parsing middleware
@@ -31,13 +30,13 @@ $app->get('/', function (Request $request, Response $response, $args) { //El str
 });
 
 // importo el middleware de JWT
-require_once __DIR__ . '/../config/Middleware/JWTmiddleware.php';
+require_once __DIR__ . '/../Middleware/JWTmiddleware.php';
 
 // 👉 Instancio el middleware de JWT con la clave secreta
 $JWT = new JWTmiddleware("secret_password_no_copy"); 
 
 // 👉 Cargar las rutas desde el archivo routes/routes.php
-(require __DIR__ . '/../config/routes/routes.php')($app, $pdo, $JWT); //Le paso la app, la base de datos y el Middleware a las rutas.
+(require __DIR__ . '/../routes/routes.php')($app, $JWT); //Le paso la app y el Middleware a las rutas.
 
 
 $app->run(); //Corre la APP.

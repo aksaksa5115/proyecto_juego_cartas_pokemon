@@ -1,12 +1,13 @@
 <?php
 
 
+require_once __DIR__ ."/../../config/Database.php"; // Importar la clase de conexión a la base de datos
 class movementsServer {
     private $pdo;
     private const SERVER_MAZO_ID = 1;
 
-    public function __construct($pdo) {
-        $this->pdo = $pdo;
+    public function __construct() {
+        $this->pdo = Database::getConnection(); // <- ESTA LÍNEA ES FUNDAMENTAL
     }
     public function cartaServer($partidaId){
 

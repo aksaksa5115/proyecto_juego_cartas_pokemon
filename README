@@ -15,7 +15,7 @@ debera cambiar el de abajo de todo
     ##CustomLog "logs/dummy-host.example.com-access.log" common
 ##</VirtualHost>
 
-debera cambiar dejarlo asi
+debera cambiar dejandolo asi
 
 <VirtualHost *:80>
     ##ServerAdmin webmaster@dummy-host.example.com

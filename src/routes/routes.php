@@ -6,8 +6,16 @@ use Slim\App;
 
 
 # Esta es una funcion de prueba, retorna todos los usuarios de la base de datos.
-return function (App $app, PDO $pdo, $JWT) {
-    $app->get('/users', function (Request $request, Response $response) use ($pdo) {
+return function (App $app, $JWT) {
+    $app->get('/users', function (Request $request, Response $response) {
+
+        try {
+            $pdo = Database::getConnection(); // siempre se obtiene conexión si hay algo que actualizar
+        } catch (PDOException $e) {
+            $response->getBody()->write(json_encode(["error" => "Error al conectar a la base de datos."]));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+        }
+
         $stmt = $pdo->query("SELECT * FROM usuario"); 
         $usuarios = $stmt->fetchAll();
 
@@ -21,10 +29,10 @@ return function (App $app, PDO $pdo, $JWT) {
     # POST /registro <------ registrarse en la pag
     # PUT /perfil <------- actualizar datos del usuario logueado
     # GET /perfil <------- obtener datos del usuario logueado
-    (require __DIR__ . '/../Controllers/UserController/UserController.php')($app, $pdo, $JWT);
+    (require __DIR__ . '/../Controllers/UserController/UserController.php')($app, $JWT);
     # Esta ruta solo extrae las estadisticas de los jugadores, cantidad de ganadas, perdidas y empatadas
     # GET /stats <------- obtener estadisticas de los jugadores
-    (require __DIR__ . '/../Controllers/UserController/StatsGlobal.php')($app, $pdo);
+    (require __DIR__ . '/../Controllers/UserController/StatsGlobal.php')($app);
     //---------------------------------------------------------------------------------------
     //--------- Ruta para los controladores de mazos -----------
     #este controlador posee las siguientes opciones:
@@ -32,16 +40,16 @@ return function (App $app, PDO $pdo, $JWT) {
     # GET /mazos <------- obtener todos los mazos del usuario logueado
     # DELETE /mazo/{mazo} <------- eliminar un mazo
     # PUT /mazo/{mazo} <------- modificar un mazo
-    (require __DIR__ . '/../Controllers/DeckController/deckController.php')($app, $pdo, $JWT);
+    #(require __DIR__ . '/../Controllers/DeckController/deckController.php')($app, $pdo, $JWT);
     //---------------------------------------------------------------------------------------
     //--------- Ruta para los controladores de partidas -----------
     #este controlador posee las siguientes opciones:
     # POST /partida <------- crear una partida nueva
     # DELETE /partida/{partida} <------- eliminar una partida
-    (require __DIR__ . '/../Controllers/MatchController/matchController.php')($app, $pdo, $JWT);
+    (require __DIR__ . '/../Controllers/MatchController/matchController.php')($app,$JWT);
     //---------------------------------------------------------------------------------------
     //--------- Ruta para los controladores de movimientos -----------
     #este controlador posee las siguientes opciones:
-    (require __DIR__ . '/../Controllers/Movements/movementsController.php')($app, $pdo, $JWT);
+    (require __DIR__ . '/../Controllers/Movements/movementsController.php')($app,$JWT);
     
 };

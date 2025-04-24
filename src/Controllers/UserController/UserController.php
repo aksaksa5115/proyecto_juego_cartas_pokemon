@@ -4,30 +4,39 @@ use Psr\Http\Message\ResponseInterface as Response; // Importar la interfaz de r
 use Psr\Http\Message\ServerRequestInterface as Request; // Importar la interfaz de solicitud de PSR
 
 
-require_once __DIR__ ."/../../validation.php"; // Importar la clase de validación 
+require_once __DIR__ ."/../../helpers/validation.php"; // Importar la clase de validación
+require_once __DIR__ ."/../../config/Database.php"; // Importar la clase de conexión a la base de datos 
 
     #----------------------METODOS DE USUARIO----------------------
     #--------------------------------------------------------------
-return function ($app, $pdo, $JWT ) {
+return function ($app, $JWT ) {
     # en POSTMAN poner en formato JSON el body de la peticion
     #{ 
     #  "usuario": "introducir su usuario",
     #  "password":"introducir su contraseña"
     #}
-    $app->post('/login', function(Request $request, Response $response) use ($pdo) {
+    $app->post('/login', function(Request $request, Response $response) {
         $data = json_decode($request->getBody(), true);
         #chequeo si data es un array y si tiene los indices usuario y password
+
         if (!$data || !isset($data['usuario']) || !isset($data['password'])) {
             $response->getBody()->write(json_encode(["error" => "faltan datos"]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(400); //bad request
         }
+        $usuario = $data['usuario'] ?? ""; // Nombre de usuario (si se proporciona)
+        $password = $data['password'] ?? ""; // Contraseña (si se proporciona)
+        
         // chequeo si el usuario intenta entrar a server
         if ($data['usuario'] === 'server') {
             $response->getBody()->write(json_encode(["error" => "Acceso denegado al usuario del sistema."]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
         }
-        //chequeo si se ingreso un usuario valido, y si ingreso bien la contraseña
+        // chequeo si se ingreso un usuario valido, y si ingreso bien la contraseña
         try {
+
+            $pdo = Database::getConnection(); // Obtengo la conexión a la base de datos
+
+
             $stmt = $pdo->prepare("SELECT * FROM usuario WHERE usuario = ?");
             $stmt->execute([$data['usuario']]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -54,11 +63,15 @@ return function ($app, $pdo, $JWT ) {
             $stmt = $pdo->prepare("UPDATE usuario SET token = ?, vencimiento_token = ? WHERE usuario = ?");
             $stmt->execute([$jwt, date('Y-m-d H:i:s', $expira), $data['usuario']]);
 
+            $pdo = null; // Cerrar la conexión a la base de datos
+
             // Devolver el token y la fecha de expiración
             $response->getBody()->write
             (json_encode
             (["token" => $jwt, "expira" => date('Y-m-d H:i:s', $expira), "usuario" => $data['usuario']]));
+            
             return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+            
         } catch (PDOException $e) {
             $response->getBody()->write(json_encode(["error" => "Error en la base de datos"]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
@@ -71,7 +84,7 @@ return function ($app, $pdo, $JWT ) {
     #   "usuario": "nuevoUsuario", 
     #   "password": "nuevaPassword"
     # }
-    $app->post('/registro', function(Request $request, Response $response) use ($pdo) {
+    $app->post('/registro', function(Request $request, Response $response) {
         $data = json_decode($request->getBody(), true);
 
         // chequeo si data es un array y si tiene los indices nombre, usuario y password
@@ -79,6 +92,7 @@ return function ($app, $pdo, $JWT ) {
             $response->getBody()->write(json_encode(["error" => "faltan campos por rellenar"]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(400); //bad request
         }
+
         // elimino los espacios en blanco por si los usuarios los ingresan
         $nombre = trim($data['nombre']);
         $usuario = trim($data['usuario']);
@@ -103,6 +117,7 @@ return function ($app, $pdo, $JWT ) {
         }
 
         try {
+            $pdo = Database::getConnection();
             // Verificar si el usuario ya existe
             $stmt = $pdo->prepare("SELECT * FROM usuario WHERE usuario = ?");
             $stmt->execute([$usuario]);
@@ -117,6 +132,8 @@ return function ($app, $pdo, $JWT ) {
             $stmt = $pdo->prepare("INSERT INTO usuario (nombre, usuario, password) VALUES (?, ?, ?)");
             $stmt->execute([$nombre, $usuario, $hashedPassword]);
             $response->getBody()->write(json_encode(['message' => 'Usuario registrado y guardado con exito.']));
+            
+            $pdo = null; // Cerrar la conexión a la base de datos
             return $response->withHeader('Content-Type', 'application/json')->withStatus(200); // OK
         }  catch (PDOException $e) {
             $response->getBody()->write(json_encode(["error" => "Error en la base de datos"]));
@@ -136,17 +153,22 @@ return function ($app, $pdo, $JWT ) {
     #   "password": "introducir password",
     #   "usuario": "nuevoUsuario",
     # }
-    $app->put('/perfil', function (Request $request, Response $response) use ($pdo) {
+    $app->put('/perfil', function (Request $request, Response $response) {
         $user = $request->getAttribute('jwt'); // Usuario autenticado
-        $body = $request->getParsedBody(); // Obtener el cuerpo de la solicitud
+        $body = $request->getParsedBody();
+        // chequeo si el body de la solicitud viene sin valores
+        if (!$body || !is_array($body)) {
+            $response->getBody()->write(json_encode(["error" => "Cuerpo de la solicitud inválido."]));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+        }
         $userId = $user->sub; // ID del usuario autenticado
         $usuarioActual = $user->username; // Nombre de usuario actual
         $expira = $user->exp; // Fecha de expiración del token
-        $nuevaPassword = $body['password']; // Nueva contraseña    
-        $nuevoUsername = $body['usuario']; // Nuevo nombre de usuario
+        $nuevaPassword = $body['password'] ?? ""; // Nueva contraseña (si se proporciona)
+        $nuevoUsername = $body['usuario'] ?? ""; // Nuevo nombre de usuario (si se proporciona)
+        
         //esta variable solo se usa para la consulta de update, no es necesario que la valide.
         $usuarioFinal = $usuarioActual;
-        // voy a asumir que se van a enviar todos los campos, simplemente voy a validar que no esten vacios y que sean iguales.
         if (trim($nuevoUsername) === "" && trim($nuevaPassword) === "") {
             $response->getBody()->write(json_encode(["error" => "No se han enviado datos para actualizar."]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(400); // Bad Request
@@ -155,6 +177,15 @@ return function ($app, $pdo, $JWT ) {
         $campos = [];
         $valores = [];
         $jwt = null;
+        // obtengo conexion a la base de datos
+        try {
+            $pdo = Database::getConnection(); // siempre se obtiene conexión si hay algo que actualizar
+        } catch (PDOException $e) {
+            $response->getBody()->write(json_encode(["error" => "Error al conectar a la base de datos."]));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+        }
+
+
         // si el usuario quiere cambiar su nombre entra aca
         if (trim($nuevoUsername) !== "") {
             // Validar el nuevo nombre de usuario
@@ -163,8 +194,13 @@ return function ($app, $pdo, $JWT ) {
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(400); //bad request
             }
             // Verificar si el nuevo nombre de usuario ya está en uso
-            $stmt = $pdo->prepare("SELECT COUNT(*) FROM usuario WHERE usuario = ?");
-            $stmt->execute([$nuevoUsername]);
+            try {
+                $stmt = $pdo->prepare("SELECT COUNT(*) FROM usuario WHERE usuario = ?");
+                $stmt->execute([$nuevoUsername]);
+            } catch (PDOException $e) {
+                $response->getBody()->write(json_encode(["error"=> $e->getMessage()]));
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(500); // Internal Server Error
+            }
             if ($stmt->fetchColumn() > 0) {
                 $response->getBody()->write(json_encode(['error' => 'El nombre de usuario ya esta en uso']));
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(400); // Bad Request
@@ -175,6 +211,7 @@ return function ($app, $pdo, $JWT ) {
             //si el nombre fue cambiado, cambio la variable $usuarioFinal para que contenga el nuevo nombre de usuario.
             $usuarioFinal = $nuevoUsername;
         }
+
         // si el usuario quiere cambiar su contraseña entra aca
         if (trim($nuevaPassword) !== "") {
             // Validar la nueva contraseña
@@ -186,7 +223,7 @@ return function ($app, $pdo, $JWT ) {
             // Hashear la nueva contraseña y guardarla en el array
             $campos[] = "password = ?";
             $valores[] = password_hash($nuevaPassword, PASSWORD_BCRYPT);
-            // Actualizar token pero conservando la misma fecha de expiracion (consultar como funciona el token)
+            // Actualizar token pero conservando la misma fecha de expiracion 
             date_default_timezone_set('America/Argentina/Buenos_Aires'); // defino zona horaria
             $key = "secret_password_no_copy";
             $payload = [
@@ -208,6 +245,8 @@ return function ($app, $pdo, $JWT ) {
         $query = "UPDATE usuario SET " . implode(", ", $campos) . " WHERE id = ?";
         $stmt = $pdo->prepare($query);
         $stmt->execute($valores); // Ejecutar la consulta con los valores
+
+        $pdo = null; // Cerrar la conexión a la base de datos
 
         return $response->withHeader('Content-Type', 'application/json')->withStatus(200); // OK
 
