@@ -40,7 +40,7 @@ return function (App $app, $JWT) {
     # GET /mazos <------- obtener todos los mazos del usuario logueado
     # DELETE /mazo/{mazo} <------- eliminar un mazo
     # PUT /mazo/{mazo} <------- modificar un mazo
-    #(require __DIR__ . '/../Controllers/DeckController/deckController.php')($app, $pdo, $JWT);
+    (require __DIR__ . '/../Controllers/DeckController/deckController.php')($app,$JWT);
     //---------------------------------------------------------------------------------------
     //--------- Ruta para los controladores de partidas -----------
     #este controlador posee las siguientes opciones:

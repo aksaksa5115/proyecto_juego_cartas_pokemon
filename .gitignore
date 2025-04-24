@@ -1,3 +1,5 @@
 /vendor/
 /claves_usuarios
+/templates
+/Controller/JWTController.php
 
