@@ -91,9 +91,9 @@ return function ($app, $JWT ) {
         if (!$data || !isset($data['usuario']) || !isset($data['password']) || !isset($data['nombre'])) {
             $response->getBody()->write(json_encode(["error" => "faltan campos por rellenar"]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(400); //bad request
-        }
+        }    
 
-        // elimino los espacios en blanco por si los usuarios los ingresan
+// elimino los espacios en blanco por si los usuarios los ingresan
         $nombre = trim($data['nombre']);
         $usuario = trim($data['usuario']);
         $password = trim($data['password']);

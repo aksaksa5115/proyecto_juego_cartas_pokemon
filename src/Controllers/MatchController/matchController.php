@@ -42,13 +42,16 @@ return function ($app, $JWT) {
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
             }
     
-            // Verificar que el mazo no esté en uso
+            // Verificar que el mazo del usuario no esté en uso
             $stmt = $pdo->prepare("SELECT id FROM partida WHERE mazo_id = ? AND estado = 'en_curso'");
             $stmt->execute([$mazoId]);
             if ($stmt->fetchColumn()) {
                 $response->getBody()->write(json_encode(['error' => 'El mazo ya está en uso en otra partida.']));
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
             }
+
+            // verificar que el mazo del servidor no esté en uso
+            $stmt = $pdo->prepare("SELECT id FROM partida WHERE estado = 'en_curso'");
     
             // Crear la partida
             $stmt = $pdo->prepare("INSERT INTO partida (usuario_id, el_usuario, fecha, mazo_id, estado) 
@@ -57,7 +60,7 @@ return function ($app, $JWT) {
             $partidaId = $pdo->lastInsertId();
     
             // Actualizar cartas a 'en_mano'
-            $stmt = $pdo->prepare("UPDATE mazo_carta SET estado = 'en_mano' WHERE mazo_id = ?");
+            $stmt = $pdo->prepare("UPDATE mazo_carta SET estado = 'en_mano' WHERE mazo_id IN (?, 1)");
             $stmt->execute([$mazoId]);
     
             // Obtener las cartas

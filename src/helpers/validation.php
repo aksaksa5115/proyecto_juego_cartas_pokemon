@@ -22,5 +22,13 @@ class validation {
         return (preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/', $password));
     }
 
+    public static function tieneVentaja($atributoAtacante, $atributoDefensor, $ventajas) {
+        if (isset($ventajas[$atributoAtacante])) {
+            return in_array($atributoDefensor, $ventajas[$atributoAtacante]);
+        }
+        return false;
+    }
+    
+
 
 }

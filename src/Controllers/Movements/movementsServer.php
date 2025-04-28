@@ -9,8 +9,7 @@ class movementsServer {
     public function __construct() {
         $this->pdo = Database::getConnection(); // <- ESTA LÍNEA ES FUNDAMENTAL
     }
-    public function cartaServer($partidaId){
-
+    public function jugadaServidor($partidaId){
         // primero obtenemos las cartas del servidor que no fueron usadas, escogiendo una al azar
         $stmt = $this->pdo->prepare("
         SELECT mc.carta_id FROM mazo_carta mc
