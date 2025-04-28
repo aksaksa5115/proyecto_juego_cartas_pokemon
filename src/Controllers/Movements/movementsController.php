@@ -9,6 +9,11 @@ return function ($app, $jwt){
 
     $movementsServer = new movementsServer(); // Importar el archivo de servidor de movimientos
     
+    # en POSTMAN escribir el body en formato JSON de la siguiente manera:
+    # {
+    #     "partida_id": "id de la partida",
+    #     "carta": "id de la carta"
+    # }
     $app->post('/jugada', function (Request $request, Response $response) use ($movementsServer){
         $body = $request->getParsedBody();
         
@@ -34,12 +39,12 @@ return function ($app, $jwt){
             $pdo = Database::getConnection();
     
             // Verifico que la partida exista y sea del usuario
-            $stmt = $pdo->prepare("SELECT mazo_id FROM partida WHERE id = ? AND usuario_id = ?");
+            $stmt = $pdo->prepare("SELECT mazo_id FROM partida WHERE id = ? AND estado = 'en_curso' AND usuario_id = ?");
             $stmt->execute([$partidaId, $userId]);
             $mazoId = $stmt->fetchColumn();
     
             if (!$mazoId) {
-                $response->getBody()->write(json_encode(["error"=> "la partida no existe o no es de tu propiedad."]));
+                $response->getBody()->write(json_encode(["error"=> "la partida termino, o no existe o no es de tu propiedad."]));
                 return $response->withHeader("Content-Type", "application/json")->withStatus(400); // Bad Request
             }
     
@@ -56,26 +61,23 @@ return function ($app, $jwt){
             // Traigo la carta del servidor
             $cartaServidorid = $movementsServer->jugadaServidor($partidaId);
     
-            // Traigo el ataque, atributo y nombre del atributo de ambas cartas
+            // Traigo los datos de la carta del jugador
             $stmt = $pdo->prepare("SELECT c.ataque, c.atributo_id, a.nombre FROM carta c
-            INNER JOIN atributo a ON c.atributo_id = a.id WHERE c.id IN (?, ?)");
-            $stmt->execute([$cartaUserId, $cartaServidorid]);
-            $carta = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            INNER JOIN atributo a ON c.atributo_id = a.id WHERE c.id = ?");
+            $stmt->execute([$cartaUserId]);
+            $cartaUser = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            // Verificamos si tenemos dos resultados
-            if (count($carta) < 2) {
-                // Si no hay suficientes resultados, manejar el error apropiadamente
-                $response->getBody()->write(json_encode(['error' => 'No se encontraron las cartas o datos inválidos.']));
-                return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
-                }
-            
-            $fuerzaUser = $carta[0]['ataque'];
-            $atributoUser = $carta[0]['atributo_id'];
-            $atributoNombreUser = $carta[0]['nombre'];
-            
-            $fuerzaServidor = $carta[1]['ataque'];
-            $atributoServer = $carta[1]['atributo_id'];
-            $atributoNombreServer = $carta[1]['nombre'];
+            $fuerzaUser = $cartaUser['ataque'];
+            $atributoUser = $cartaUser['atributo_id'];
+            $atributoNombreUser = $cartaUser['nombre'];
+
+            // Traigo los datos de la carta del servidor
+            $stmt->execute([$cartaServidorid]);
+            $cartaServidor = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            $fuerzaServidor = $cartaServidor['ataque'];
+            $atributoServer = $cartaServidor['atributo_id'];
+            $atributoNombreServer = $cartaServidor['nombre'];   
 
 
             // establezco el array de ventajas de atributos
@@ -167,13 +169,15 @@ return function ($app, $jwt){
         } catch (PDOException $e) {
             $response->getBody()->write(json_encode([
                 'error' => 'Error de conexión o consulta a la base de datos.',
-                'detalle' => $e->getMessage() // 👈 Mostrar detalle del error
+                'detalle' => $e->getMessage() // Mostrar detalle del error
             ]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
         }
     
     })->add($jwt);
 
+
+    # en POSTMAN en la url escribir el id de la partida a consultar en el lugar de {partida}
 
     $app->get('/usuario/partida/{partida}/cartas', function (Request $request, Response $response, array $args) {        
         $user = $request->getAttribute('jwt');
@@ -231,7 +235,7 @@ return function ($app, $jwt){
         } catch (PDOException $e) {
             $response->getBody()->write(json_encode([
                 'error' => 'Error de conexión o consulta a la base de datos.',
-                'detalle' => $e->getMessage() // 👈 Mostrar detalle del error
+                'detalle' => $e->getMessage() // Mostrar detalle del error
             ]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
         }

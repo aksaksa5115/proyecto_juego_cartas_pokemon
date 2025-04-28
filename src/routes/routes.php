@@ -5,8 +5,9 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 
 
-# Esta es una funcion de prueba, retorna todos los usuarios de la base de datos.
 return function (App $app, $JWT) {
+
+    # Esta es una funcion de prueba, retorna todos los usuarios de la base de datos.
     $app->get('/users', function (Request $request, Response $response) {
 
         try {
@@ -50,6 +51,8 @@ return function (App $app, $JWT) {
     //---------------------------------------------------------------------------------------
     //--------- Ruta para los controladores de movimientos -----------
     #este controlador posee las siguientes opciones:
+    # POST /jugada <------- crear una jugada nueva 
+    # GET //usuario/partida/{partida}/cartas <------- obtener las cartas restantes del usuario en la partida
     (require __DIR__ . '/../Controllers/Movements/movementsController.php')($app,$JWT);
     
 };
