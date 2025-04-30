@@ -6,7 +6,7 @@ require_once __DIR__ ."/../../config/database.php"; // Importar la clase de cone
 
 return function ($app){
 
-    $app->get('/stats', function (Request $request, Response $response){
+    $app->get('/estadisticas', function (Request $request, Response $response){
         try {
             $pdo = Database::getConnection(); // siempre se obtiene conexión si hay algo que actualizar
             # preparo consulta para traer todo

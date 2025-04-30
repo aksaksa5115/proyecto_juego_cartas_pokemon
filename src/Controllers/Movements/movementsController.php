@@ -14,7 +14,7 @@ return function ($app, $jwt){
     #     "partida_id": "id de la partida",
     #     "carta": "id de la carta"
     # }
-    $app->post('/jugada', function (Request $request, Response $response) use ($movementsServer){
+    $app->post('/jugadas', function (Request $request, Response $response) use ($movementsServer){
         $body = $request->getParsedBody();
         
         if (!$body || !is_array($body) ) {
@@ -184,7 +184,7 @@ return function ($app, $jwt){
 
     # en POSTMAN en la url escribir el id de la partida a consultar en el lugar de {partida}
 
-    $app->get('/usuario/{usuario}/partida/{partida}/cartas', function (Request $request, Response $response, array $args) {        
+    $app->get('/usuarios/{usuario}/partidas/{partida}/cartas', function (Request $request, Response $response, array $args) {        
         $partidaId = $args['partida'] ?? "";
         $userId = $args['usuario'] ?? "";
 

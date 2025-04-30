@@ -15,7 +15,7 @@ return function ($app, $JWT) {
     #  "cartas": [1, 2, 3, 4, 5] el numero de las cartas puede ser un random entre 1 y 25 (hay 25 cartas en la base de datos)
     # }
 
-    $app->post("/mazo", function(Request $request, Response $response) {
+    $app->post("/mazos", function(Request $request, Response $response) {
         # Recupero el payload del JWT, que contiene el id del usuario
         $user = $request->getAttribute("jwt");
         $body = $request->getParsedBody();
@@ -107,7 +107,7 @@ return function ($app, $JWT) {
     # en POSTMAN escribir esto en la URL de la siguiente manera:
     # "ruta al proyecto"/mazo/"id del mazo a eliminar"
 
-    $app->delete('/mazo/{mazo}', function(Request $request, Response $response, Array $args){
+    $app->delete('/mazos/{mazo}', function(Request $request, Response $response, Array $args){
         $user = $request->getAttribute('jwt');
         $mazoId = $args['mazo'] ?? ""; // id del mazo a eliminar, lo extraigo desde la url
     
@@ -158,10 +158,10 @@ return function ($app, $JWT) {
     })->add($JWT);
     
 
+    # en POSTMAN escribir esto en la URL de la siguiente manera:
+    # "ruta al proyecto"/usuarios/"id del mazo a eliminar"
 
-
-
-    $app->get('/mazos', function(Request $request, Response $response) {
+    $app->get('/usuarios/mazos', function(Request $request, Response $response) {
         $user = $request->getAttribute('jwt');
         $userID = $user->sub;
     
@@ -198,7 +198,7 @@ return function ($app, $JWT) {
     #  "nombre": "nuevo nombre del mazo"
     # }
     
-    $app->put('/mazo/{mazo}', function(Request $request, Response $response, Array $args) {
+    $app->put('/mazos/{mazo}', function(Request $request, Response $response, Array $args) {
         $user = $request->getAttribute('jwt');
         $userID = $user->sub;
         $mazoId = $args['mazo'] ?? ""; // id del mazo a modificar, lo extraigo desde la url

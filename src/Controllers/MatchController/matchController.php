@@ -12,7 +12,7 @@ return function ($app, $JWT) {
     # {
     #  "mazo": 1, // id del mazo a usar
     # }
-    $app->post('/partida', function (Request $request, Response $response) {
+    $app->post('/partidas', function (Request $request, Response $response) {
         $body = $request->getParsedBody();
     
         if (!$body || !is_array($body)) {
@@ -123,7 +123,7 @@ return function ($app, $JWT) {
     # "ruta al proyecto"/partida/"id de la partida a eliminar"
 
     // este endpoint sirve para debuggear en caso de hacer una partida de forma incorrecta
-    $app->delete('/partida/{duelo}', function (Request $request, Response $response, array $args) {
+    $app->delete('/partidas/{duelo}', function (Request $request, Response $response, array $args) {
         $user = $request->getAttribute('jwt');
         $partidaIdAeliminar = $args['duelo'];
     

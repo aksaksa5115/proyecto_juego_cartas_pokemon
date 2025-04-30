@@ -155,7 +155,7 @@ return function ($app, $JWT ) {
     #   "password": "introducir password",
     #   "nombre": "nuevoNombre",
     # }
-    $app->put('/perfil', function (Request $request, Response $response) {
+    $app->put('/usuarios', function (Request $request, Response $response) {
         $user = $request->getAttribute('jwt'); // Usuario autenticado
         $body = $request->getParsedBody();
         // chequeo si el body de la solicitud viene sin valores
@@ -247,7 +247,7 @@ return function ($app, $JWT ) {
 
     }) ->add($JWT); // Agregar el middleware JWT a la ruta de actualización del perfil
 
-    $app->get('/perfil', function (Request $request, Response $response)  {
+    $app->get('/usuarios', function (Request $request, Response $response)  {
         $user = $request->getAttribute('jwt');
         $response->getBody()->write(json_encode([
             'mensaje' => 'Bienvenido ' . $user->username . ' con ID ' . $user->sub,
