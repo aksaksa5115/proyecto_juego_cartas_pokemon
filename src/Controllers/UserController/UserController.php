@@ -73,7 +73,8 @@ return function ($app, $JWT ) {
             return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
             
         } catch (PDOException $e) {
-            $response->getBody()->write(json_encode(["error" => "Error en la base de datos"]));
+            $response->getBody()->write(json_encode(["error" => "Error en la base de datos",
+            'detalle' => $e->getMessage()]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
         }
     });
@@ -136,7 +137,8 @@ return function ($app, $JWT ) {
             $pdo = null; // Cerrar la conexión a la base de datos
             return $response->withHeader('Content-Type', 'application/json')->withStatus(200); // OK
         }  catch (PDOException $e) {
-            $response->getBody()->write(json_encode(["error" => "Error en la base de datos"]));
+            $response->getBody()->write(json_encode(["error" => "Error en la base de datos",
+            'detalle' => $e->getMessage()]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(500); // Internal Server Error
         }
     });
@@ -151,7 +153,7 @@ return function ($app, $JWT ) {
     # en POSTMAN en formato JSON poner en el body los siguientes datos:
     # { 
     #   "password": "introducir password",
-    #   "usuario": "nuevoUsuario",
+    #   "nombre": "nuevoNombre",
     # }
     $app->put('/perfil', function (Request $request, Response $response) {
         $user = $request->getAttribute('jwt'); // Usuario autenticado
@@ -162,14 +164,12 @@ return function ($app, $JWT ) {
             return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
         }
         $userId = $user->sub; // ID del usuario autenticado
-        $usuarioActual = $user->username; // Nombre de usuario actual
         $expira = $user->exp; // Fecha de expiración del token
+        $username = $user->username; // Nombre de usuario autenticado
         $nuevaPassword = $body['password'] ?? ""; // Nueva contraseña (si se proporciona)
-        $nuevoUsername = $body['usuario'] ?? ""; // Nuevo nombre de usuario (si se proporciona)
-        
-        //esta variable solo se usa para la consulta de update, no es necesario que la valide.
-        $usuarioFinal = $usuarioActual;
-        if (trim($nuevoUsername) === "" && trim($nuevaPassword) === "") {
+        $nuevoNombre = $body['nombre'] ?? ""; // Nuevo nombre de usuario (si se proporciona)
+
+        if (trim($nuevoNombre) === "" && trim($nuevaPassword) === "") {
             $response->getBody()->write(json_encode(["error" => "No se han enviado datos para actualizar."]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(400); // Bad Request
         }
@@ -180,36 +180,19 @@ return function ($app, $JWT ) {
         // obtengo conexion a la base de datos
         try {
             $pdo = Database::getConnection(); // siempre se obtiene conexión si hay algo que actualizar
-        } catch (PDOException $e) {
-            $response->getBody()->write(json_encode(["error" => "Error al conectar a la base de datos."]));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
-        }
 
 
         // si el usuario quiere cambiar su nombre entra aca
-        if (trim($nuevoUsername) !== "") {
+        if (trim($nuevoNombre) !== "") {
             // Validar el nuevo nombre de usuario
-            if (!validation::validarUsername($nuevoUsername)) {
+            if (!validation::validarUsername($nuevoNombre)) {
                 $response->getBody()->write(json_encode(["error" => "El nombre de usuario debe tener entre 1 y 20 caracteres y solo puede contener letras."]));
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(400); //bad request
             }
-            // Verificar si el nuevo nombre de usuario ya está en uso
-            try {
-                $stmt = $pdo->prepare("SELECT COUNT(*) FROM usuario WHERE usuario = ?");
-                $stmt->execute([$nuevoUsername]);
-            } catch (PDOException $e) {
-                $response->getBody()->write(json_encode(["error"=> $e->getMessage()]));
-                return $response->withHeader('Content-Type', 'application/json')->withStatus(500); // Internal Server Error
-            }
-            if ($stmt->fetchColumn() > 0) {
-                $response->getBody()->write(json_encode(['error' => 'El nombre de usuario ya esta en uso']));
-                return $response->withHeader('Content-Type', 'application/json')->withStatus(400); // Bad Request
-            }
             // Guardar el nuevo nombre de usuario en el array
-            $campos[] = "usuario = ?";
-            $valores[] = $nuevoUsername;
-            //si el nombre fue cambiado, cambio la variable $usuarioFinal para que contenga el nuevo nombre de usuario.
-            $usuarioFinal = $nuevoUsername;
+            $dataNombre = "nombre actualizado: " . $nuevoNombre;
+            $campos[] = "nombre = ?";
+            $valores[] = $nuevoNombre;
         }
 
         // si el usuario quiere cambiar su contraseña entra aca
@@ -228,7 +211,7 @@ return function ($app, $JWT ) {
             $key = "secret_password_no_copy";
             $payload = [
                 'sub' => $userId, // ID del usuario
-                'username' => $usuarioFinal, // nombre de usuario
+                'username' => $username, // nombre de usuario
                 'exp' => $expira // fecha de expiración
             ];
             $jwt = JWT::encode($payload, $key, 'HS256');
@@ -236,8 +219,7 @@ return function ($app, $JWT ) {
              //actualizo el token y la fecha de expiracion en la base de datos
              $stmt = $pdo->prepare("UPDATE usuario SET token = ?, vencimiento_token = ? WHERE id = ?");
              $stmt->execute([$jwt, date('Y-m-d H:i:s', $expira), $userId]);
-             $response->getBody()->write(json_encode(['mensaje' => 'Datos actualizados'
-                . 'Nuevo token generado', 'token' => $jwt]));
+             $dataPassword = "contraseña actualizada, " . $nuevaPassword . " nuevo token generado: " . $jwt;
         }
 
         //realizo la consulta de update
@@ -246,8 +228,21 @@ return function ($app, $JWT ) {
         $stmt = $pdo->prepare($query);
         $stmt->execute($valores); // Ejecutar la consulta con los valores
 
-        $pdo = null; // Cerrar la conexión a la base de datos
+        }  catch (PDOException $e) {
+            $response->getBody()->write(json_encode(["error" => "Error al conectar a la base de datos.",
+            'detalle' => $e->getMessage()]));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+        }
 
+        $data = [];
+        $data['nombre'] = $dataNombre ?? "no se actualizo el nombre"; // Nombre actualizado (si se proporciona)
+        $data['password'] = $dataPassword ?? "no se actualizo la contraseña"; // Contraseña actualizada (si se proporciona)
+        $pdo = null; // Cerrar la conexión a la base de datos
+        $response->getBody()->write(json_encode([
+            'mensaje' => 'Perfil actualizado con éxito.',
+            'data' => $data
+            ]
+        ));
         return $response->withHeader('Content-Type', 'application/json')->withStatus(200); // OK
 
     }) ->add($JWT); // Agregar el middleware JWT a la ruta de actualización del perfil

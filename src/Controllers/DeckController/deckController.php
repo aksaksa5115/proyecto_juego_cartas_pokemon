@@ -97,7 +97,8 @@ return function ($app, $JWT) {
             return $response->withHeader('Content-Type', 'application/json')->withStatus(200); // OK
     
         } catch (Exception $e) {
-            $response->getBody()->write(json_encode(['error' => 'Error al crear el mazo.']));
+            $response->getBody()->write(json_encode(['error' => 'Error al crear el mazo.',
+            'detalle' => $e->getMessage()]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(500); // Internal Server Error
         }
     })->add($JWT);
@@ -150,7 +151,8 @@ return function ($app, $JWT) {
             return $response->withHeader('Content-Type', 'application/json')->withStatus(200); // OK
     
         } catch (Exception $e) {
-            $response->getBody()->write(json_encode(['error' => 'Error al eliminar el mazo.']));
+            $response->getBody()->write(json_encode(['error' => 'Error al eliminar el mazo.',
+            'detalle' => $e->getMessage()]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(500); // Internal Server Error
         }
     })->add($JWT);
@@ -182,7 +184,8 @@ return function ($app, $JWT) {
             return $response->withHeader('Content-Type', 'application/json')->withStatus(200); // OK
     
         } catch (Exception $e) {
-            $response->getBody()->write(json_encode(['error' => 'Error al obtener los mazos.']));
+            $response->getBody()->write(json_encode(['error' => 'Error al obtener los mazos.',
+            'detalle' => $e->getMessage()]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(500); // Internal Server Error
         }
     })->add($JWT);
@@ -235,7 +238,8 @@ return function ($app, $JWT) {
             return $response->withHeader('Content-Type', 'application/json')->withStatus(200); // OK
     
         } catch (Exception $e) {
-            $response->getBody()->write(json_encode(['error' => 'Error al actualizar el mazo.']));
+            $response->getBody()->write(json_encode(['error' => 'Error al actualizar el mazo.',
+            'detalle' => $e->getMessage()]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(500); // Internal Server Error
         }
     })->add($JWT);
@@ -281,7 +285,8 @@ return function ($app, $JWT) {
             return $response->withHeader('Content-type', 'application/json')->withStatus(200);
     
         } catch (Exception $e) {
-            $response->getBody()->write(json_encode(['error' => 'Error al recuperar las cartas.']));
+            $response->getBody()->write(json_encode(['error' => 'Error al recuperar las cartas.',
+            'detalle' => $e->getMessage()]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(500); // Internal Server Error
         }
     });

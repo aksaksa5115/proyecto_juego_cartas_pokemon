@@ -68,7 +68,6 @@ return function ($app, $jwt){
             $cartaUser = $stmt->fetch(PDO::FETCH_ASSOC);
 
             $fuerzaUser = $cartaUser['ataque'];
-            $atributoUser = $cartaUser['atributo_id'];
             $atributoNombreUser = $cartaUser['nombre'];
 
             // Traigo los datos de la carta del servidor
@@ -76,19 +75,20 @@ return function ($app, $jwt){
             $cartaServidor = $stmt->fetch(PDO::FETCH_ASSOC);
 
             $fuerzaServidor = $cartaServidor['ataque'];
-            $atributoServer = $cartaServidor['atributo_id'];
             $atributoNombreServer = $cartaServidor['nombre'];   
 
 
             // establezco el array de ventajas de atributos
-            $ventajas = require __DIR__ ."/../../config/ventajasAtributos.php"; // Importar el archivo de ventajas de atributos
+            $ventajas = require __DIR__ ."/../../config/ventajaAtributos.php"; // Importar el archivo de ventajas de atributos
 
-
-            if (validation::tieneVentaja($atributoUser, $atributoServer, $ventajas)) {
+            $atributoBuff = "";
+            if (validation::tieneVentaja($atributoNombreUser, $atributoNombreServer, $ventajas)) {
                 $fuerzaUser *=1.30;
+                $atributoBuff = "ventaja para el usuario";
             }
-            if (validation::tieneVentaja($atributoServer, $atributoUser, $ventajas)) {
+            if (validation::tieneVentaja($atributoNombreServer, $atributoNombreUser, $ventajas)) {
                 $fuerzaServidor *=1.30;
+                $atributoBuff = "ventaja para el servidor";
             }
     
             // Determino el resultado de la jugada
@@ -104,6 +104,10 @@ return function ($app, $jwt){
             // Actualizo el estado de la carta del usuario
             $stmt = $pdo->prepare("UPDATE mazo_carta SET estado = 'descartado' WHERE mazo_id = ? AND carta_id = ?");
             $stmt->execute([$mazoId, $cartaUserId]);
+
+            // actualizo el estado de la carta del servidor
+            $stmt = $pdo->prepare("UPDATE mazo_carta SET estado = 'descartado' WHERE mazo_id = 1 AND carta_id = ?");
+            $stmt->execute([$cartaServidorid]);
     
             // Registro la jugada
             $stmt = $pdo->prepare("INSERT INTO jugada (partida_id, carta_id_a, carta_id_b, el_usuario) VALUES (?, ?, ?, ?)");
@@ -155,6 +159,7 @@ return function ($app, $jwt){
                 "atributo usuario" => $atributoNombreUser,
                 "fuerza usuario" => (int) $fuerzaUser,
                 "--------" => "resultado",
+                "buffo " => $atributoBuff,
                 "resultado" => $estadoJugada
             ];
     
@@ -179,20 +184,44 @@ return function ($app, $jwt){
 
     # en POSTMAN en la url escribir el id de la partida a consultar en el lugar de {partida}
 
-    $app->get('/usuario/partida/{partida}/cartas', function (Request $request, Response $response, array $args) {        
-        $user = $request->getAttribute('jwt');
-        $userId = $user->sub;
+    $app->get('/usuario/{usuario}/partida/{partida}/cartas', function (Request $request, Response $response, array $args) {        
         $partidaId = $args['partida'] ?? "";
+        $userId = $args['usuario'] ?? "";
 
         if ($partidaId == "") {
             $response->getBody()->write(json_encode(["error" => "faltan datos para realizar la muestra."]));
             return $response->withHeader("Content-Type", "application/json")->withStatus(400); // Bad Request
         }
+        
+        if ($userId == "") {
+            $response->getBody()->write(json_encode(["error" => "faltan datos para realizar la muestra."]));
+            return $response->withHeader("Content-Type", "application/json")->withStatus(400); // Bad Request
+        }
 
+        $userId = trim($userId);
         $partidaId = trim($partidaId);
-
         try {
             $pdo = Database::getConnection();
+
+            // si el id del usuario es 1, entonces es el servidor, solo extraigo los atributos de las cartas que tenga en mano
+            if ($userId == 1) {
+                $stmt = $pdo->prepare("
+                SELECT a.nombre AS atributo
+                FROM mazo_carta mc
+                INNER JOIN carta c ON mc.carta_id = c.id
+                INNER JOIN atributo a ON c.atributo_id = a.id
+                WHERE mc.mazo_id = 1 AND mc.estado = 'en_mano'"
+                );
+                $stmt->execute();
+                $atributos = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+                $data = [
+                    "atributos" => $atributos
+                ];
+    
+                    $response->getBody()->write(json_encode($data));
+                    return $response->withHeader("Content-Type", "application/json")->withStatus(200);
+            }
 
             // Verifico que la partida exista y sea del usuario
             $stmt = $pdo->prepare("SELECT mazo_id FROM partida WHERE id = ? AND usuario_id = ?");
@@ -214,23 +243,29 @@ return function ($app, $jwt){
                 return $response->withHeader("Content-Type", "application/json")->withStatus(400); // Bad Request
             }
 
-            // Traigo las cartas del mazo
-            $stmt = $pdo->prepare("SELECT carta_id FROM mazo_carta WHERE mazo_id = ? AND estado = 'en_mano'");
-            $stmt->execute([$mazoId]);
-            $cartas = $stmt->fetchAll(PDO::FETCH_COLUMN);
-
-            if (!$cartas) {
-                $response->getBody()->write(json_encode(["error"=> "no hay cartas en el mazo"]));
+            $stmt = $pdo->prepare("
+            SELECT a.nombre AS atributo
+            FROM partida p
+            INNER JOIN mazo_carta mc ON mc.mazo_id = p.mazo_id
+            INNER JOIN carta c ON mc.carta_id = c.id
+            INNER JOIN atributo a ON c.atributo_id = a.id
+            WHERE p.id = ? AND mc.estado = 'en_mano'
+            ");
+            $stmt->execute([$partidaId]);
+            $atributos = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        
+            if (!$atributos) {
+                $response->getBody()->write(json_encode(["error" => "no hay cartas en mano"]));
                 return $response->withHeader("Content-Type", "application/json")->withStatus(400);
             }
-
-            // Armo la respuesta
+        
+            // Armar respuesta
             $data = [
-                "cartas" => array_map('intval', $cartas)
+                "atributos" => $atributos
             ];
 
-            $response->getBody()->write(json_encode($data));
-            return $response->withHeader("Content-Type", "application/json")->withStatus(200);
+                $response->getBody()->write(json_encode($data));
+                return $response->withHeader("Content-Type", "application/json")->withStatus(200);
 
         } catch (PDOException $e) {
             $response->getBody()->write(json_encode([

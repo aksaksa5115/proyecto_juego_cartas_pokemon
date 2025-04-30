@@ -67,6 +67,41 @@ return function ($app, $JWT) {
             $stmt = $pdo->prepare("SELECT nombre, ataque FROM carta WHERE id IN (SELECT carta_id FROM mazo_carta WHERE mazo_id = ?)");
             $stmt->execute([$mazoId]);
             $cartas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // se testearan cosas aca, creamos un archivo php desde aca que almacenara el array asociativo de los atributos
+            // y sus ventajas, para luego ser usado en el juego
+            // Consulta con JOIN para traer los nombres
+            $stmt = $pdo->query("
+            SELECT a1.nombre AS atributo, a2.nombre AS venceA
+            FROM gana_a g
+            JOIN atributo a1 ON g.atributo_id = a1.id
+            JOIN atributo a2 ON g.atributo_id2 = a2.id
+            ");
+        
+            $ventajas = [];
+        
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $a = $row['atributo'];
+              $v = $row['venceA'];
+              $ventajas[$a][] = $v;
+          }
+        
+            // Armamos el contenido manualmente con sintaxis limpia
+            $contenido = "<?php\nreturn [\n";
+            $contenido .= "// Este archivo fue generado automáticamente.\n";
+            $contenido .= "// Se actualiza cada vez que se crea una partida.\n\n";
+        
+            foreach ($ventajas as $clave => $valores) {
+                $lista = "['" . implode("', '", $valores) . "']";
+                $comentario = "// $clave le gana a " . implode(", ", $valores);
+                $contenido .= "    '$clave' => $lista, $comentario\n";
+            }
+        
+            $contenido .= "];\n";
+        
+            // Guardamos
+            file_put_contents(__DIR__ . '/../../config/ventajaAtributos.php', $contenido);
+            
     
             $response->getBody()->write(json_encode([
                 'message' => 'Partida creada con éxito.',
@@ -77,7 +112,8 @@ return function ($app, $JWT) {
             return $response->withHeader('Content-Type', 'application/json')->withStatus(201);
     
         } catch (Exception $e) {
-            $response->getBody()->write(json_encode(['error' => 'Error al crear la partida.']));
+            $response->getBody()->write(json_encode(['error' => 'Error al crear la partida.',
+            'detalle' => $e->getMessage()])); 
             return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
         }
     })->add($JWT);
@@ -117,7 +153,8 @@ return function ($app, $JWT) {
             return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
     
         } catch (Exception $e) {
-            $response->getBody()->write(json_encode(['error' => 'Error al eliminar la partida.']));
+            $response->getBody()->write(json_encode(['error' => 'Error al eliminar la partida.',
+            'detalle' => $e->getMessage()]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
         }
     })->add($JWT);

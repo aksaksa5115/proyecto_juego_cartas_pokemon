@@ -28,11 +28,6 @@ class movementsServer {
         if (!$cartaId){
             throw new Exception("no hay cartas disponibles en el servidor");
         }
-
-        // actualizar estado de la carta en mazo_carta
-        $stmt = $this->pdo->prepare("UPDATE mazo_carta SET estado = 'descartado' WHERE mazo_id = 1 AND carta_id = ?");
-        $stmt->execute([$cartaId]);
-
         // retorno la carta al cliente
         return (int) $cartaId;
     }
